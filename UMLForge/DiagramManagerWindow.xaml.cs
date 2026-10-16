@@ -18,6 +18,12 @@ public partial class DiagramManagerWindow : Window
     private bool _loading;
     private Point _offset;
     private bool _dragging;
+    private readonly ScaleTransform _zoom = new(1, 1);
+    private readonly TranslateTransform _pan = new();
+    private bool _panning;
+    private Point _panStart;
+    private double _panStartX;
+    private double _panStartY;
     public string LastAction { get; private set; } = "Aucun";
     private static readonly string[] DiagramTypes = UmlNotationCatalog.All.Select(d => d.Type).ToArray();
     private static readonly string[] NodeKinds = { "Class", "Interface", "Enumeration", "Actor", "UseCase", "Lifeline", "Message", "Action", "Decision", "Merge", "Fork", "Join", "Start", "End", "Component", "Artifact", "Node", "Package", "State", "Object", "Note", "Port", "Database", "Boundary", "Control", "Entity", "Signal", "Timer", "Constraint", "Profile", "Subsystem" };
@@ -25,6 +31,10 @@ public partial class DiagramManagerWindow : Window
     public DiagramManagerWindow(UmlModel model)
     {
         InitializeComponent(); _model = model;
+        var canvasTransform = new TransformGroup();
+        canvasTransform.Children.Add(_zoom);
+        canvasTransform.Children.Add(_pan);
+        DiagramSurface.RenderTransform = canvasTransform;
         DiagramTypeBox.ItemsSource = DiagramTypes; NodeKindBox.ItemsSource = NodeKinds;
         VisibilityBox.ItemsSource = new[] { "public", "private", "protected", "package" };
         DiagramList.ItemsSource = _model.Diagrams;
@@ -52,6 +62,7 @@ public partial class DiagramManagerWindow : Window
     {
         if (DiagramList.SelectedItem is not UmlDiagram d) return;
         _selectedDiagram = d; _selectedNode = null; _loading = true;
+        SnapToGridCheck.IsChecked = d.SnapToGrid;
         DiagramNameBox.Text = d.Name; DiagramTypeBox.SelectedItem = d.Type; NodeNameBox.Text = ""; NodeDetailsBox.Text = ""; NodeKindBox.ItemsSource = GetKindsFor(d.Type); NodeKindBox.SelectedIndex = -1;
         LinkSourceBox.ItemsSource = d.Nodes; LinkTargetBox.ItemsSource = d.Nodes; LinkLabelBox.Text = DefaultLinkKind(d.Type);
         _loading = false; Render();
@@ -127,7 +138,116 @@ public partial class DiagramManagerWindow : Window
         if (!_dragging || e.LeftButton != MouseButtonState.Pressed || _selectedNode == null || sender is not Border b) return;
         var p = e.GetPosition(DiagramSurface); _selectedNode.X = Math.Max(0, p.X - _offset.X); _selectedNode.Y = Math.Max(0, p.Y - _offset.Y); Canvas.SetLeft(b, _selectedNode.X); Canvas.SetTop(b, _selectedNode.Y);
     }
-    private void Node_MouseUp(object sender, MouseButtonEventArgs e) { _dragging = false; if (sender is Border b) b.ReleaseMouseCapture(); }
+    private void Node_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        _dragging = false;
+        if (sender is Border b) b.ReleaseMouseCapture();
+
+        if (_selectedDiagram?.SnapToGrid == true && _selectedNode != null)
+        {
+            var grid = Math.Max(1, _selectedDiagram.GridSize);
+            _selectedNode.X = Math.Round(_selectedNode.X / grid) * grid;
+            _selectedNode.Y = Math.Round(_selectedNode.Y / grid) * grid;
+        }
+
+        Render();
+        LastAction = "Élément déplacé";
+    }
+
+    private void SnapToGrid_Changed(object sender, RoutedEventArgs e)
+    {
+        if (_loading || _selectedDiagram is null) return;
+        _selectedDiagram.SnapToGrid = SnapToGridCheck.IsChecked == true;
+        LastAction = _selectedDiagram.SnapToGrid ? "Grille aimantée activée" : "Grille aimantée désactivée";
+    }
+
+    private void ZoomIn_Click(object sender, RoutedEventArgs e) => ChangeZoom(1.15);
+
+    private void ZoomOut_Click(object sender, RoutedEventArgs e) => ChangeZoom(1 / 1.15);
+
+    private void ResetZoom_Click(object sender, RoutedEventArgs e)
+    {
+        _zoom.ScaleX = _zoom.ScaleY = 1;
+        _zoom.CenterX = _zoom.CenterY = 0;
+        _pan.X = _pan.Y = 0;
+    }
+
+    private void FitDiagram_Click(object sender, RoutedEventArgs e)
+    {
+        if (_selectedDiagram is null || _selectedDiagram.Nodes.Count == 0)
+        {
+            ResetZoom_Click(sender, e);
+            return;
+        }
+
+        var minX = _selectedDiagram.Nodes.Min(n => n.X);
+        var minY = _selectedDiagram.Nodes.Min(n => n.Y);
+        var maxX = _selectedDiagram.Nodes.Max(n => n.X + 160);
+        var maxY = _selectedDiagram.Nodes.Max(n => n.Y + 100);
+        var availableWidth = Math.Max(100, DiagramSurface.ActualWidth - 40);
+        var availableHeight = Math.Max(100, DiagramSurface.ActualHeight - 40);
+        var contentWidth = Math.Max(1, maxX - minX);
+        var contentHeight = Math.Max(1, maxY - minY);
+        var scale = Math.Clamp(Math.Min(availableWidth / contentWidth, availableHeight / contentHeight), 0.25, 1.5);
+
+        _zoom.CenterX = _zoom.CenterY = 0;
+        _zoom.ScaleX = _zoom.ScaleY = scale;
+        _pan.X = 20 - minX * scale;
+        _pan.Y = 20 - minY * scale;
+    }
+
+    private void ChangeZoom(double factor, Point? anchor = null)
+    {
+        var oldScale = _zoom.ScaleX;
+        var newScale = Math.Clamp(oldScale * factor, 0.25, 2.5);
+        if (Math.Abs(newScale - oldScale) < 0.0001) return;
+
+        var point = anchor ?? new Point(
+            (DiagramSurface.ActualWidth / 2 - _pan.X) / oldScale,
+            (DiagramSurface.ActualHeight / 2 - _pan.Y) / oldScale);
+
+        _pan.X += (oldScale - newScale) * point.X;
+        _pan.Y += (oldScale - newScale) * point.Y;
+        _zoom.CenterX = _zoom.CenterY = 0;
+        _zoom.ScaleX = _zoom.ScaleY = newScale;
+    }
+
+    private void DiagramSurface_MouseWheel(object sender, MouseWheelEventArgs e)
+    {
+        if (!Keyboard.IsKeyDown(Key.LeftCtrl) && !Keyboard.IsKeyDown(Key.RightCtrl)) return;
+        ChangeZoom(e.Delta > 0 ? 1.1 : 1 / 1.1, e.GetPosition(DiagramSurface));
+        e.Handled = true;
+    }
+
+    private void DiagramSurface_MouseDown(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Middle) return;
+        _panning = true;
+        _panStart = e.GetPosition(this);
+        _panStartX = _pan.X;
+        _panStartY = _pan.Y;
+        DiagramSurface.CaptureMouse();
+        Cursor = Cursors.Hand;
+        e.Handled = true;
+    }
+
+    private void DiagramSurface_MouseMove(object sender, MouseEventArgs e)
+    {
+        if (!_panning) return;
+        var current = e.GetPosition(this);
+        _pan.X = _panStartX + current.X - _panStart.X;
+        _pan.Y = _panStartY + current.Y - _panStart.Y;
+        e.Handled = true;
+    }
+
+    private void DiagramSurface_MouseUp(object sender, MouseButtonEventArgs e)
+    {
+        if (e.ChangedButton != MouseButton.Middle || !_panning) return;
+        _panning = false;
+        DiagramSurface.ReleaseMouseCapture();
+        Cursor = Cursors.Arrow;
+        e.Handled = true;
+    }
     private static string NodeStereotype(UmlDiagramNode node) => node.Kind switch
     {
         "Class" => "«class»", "Interface" => "«interface»", "Enumeration" => "«enumeration»", "Actor" => "ACTEUR",
