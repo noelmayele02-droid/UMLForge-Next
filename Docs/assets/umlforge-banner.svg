@@ -1,0 +1,55 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="390" viewBox="0 0 1200 390" role="img" aria-labelledby="title desc">
+  <title id="title">UMLForge Next — From model to code</title>
+  <desc id="desc">Dark futuristic navy banner with cyan UML nodes, code panel and a glowing synchronization bridge.</desc>
+  <defs>
+    <linearGradient id="bg" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#071126"/><stop offset="0.52" stop-color="#0B1E46"/><stop offset="1" stop-color="#171044"/></linearGradient>
+    <linearGradient id="glow" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#4DEBFF"/><stop offset="0.5" stop-color="#4B8BFF"/><stop offset="1" stop-color="#A78BFA"/></linearGradient>
+    <linearGradient id="panel" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14284B" stop-opacity=".96"/><stop offset="1" stop-color="#0B1731" stop-opacity=".98"/></linearGradient>
+    <radialGradient id="halo"><stop offset="0" stop-color="#2767FF" stop-opacity=".26"/><stop offset="1" stop-color="#2767FF" stop-opacity="0"/></radialGradient>
+    <filter id="softGlow" x="-50%" y="-50%" width="200%" height="200%"><feGaussianBlur stdDeviation="7" result="blur"/><feMerge><feMergeNode in="blur"/><feMergeNode in="SourceGraphic"/></feMerge></filter>
+    <pattern id="grid" width="30" height="30" patternUnits="userSpaceOnUse"><path d="M30 0H0V30" fill="none" stroke="#86B8FF" stroke-opacity=".065" stroke-width="1"/></pattern>
+  </defs>
+  <rect width="1200" height="390" rx="28" fill="url(#bg)"/>
+  <rect width="1200" height="390" rx="28" fill="url(#grid)"/>
+  <ellipse cx="840" cy="170" rx="430" ry="280" fill="url(#halo)"/>
+  <path d="M0 310C230 260 300 400 560 330S930 220 1200 290V390H0Z" fill="#0D2C63" opacity=".22"/>
+  <g font-family="Segoe UI, Inter, Arial, sans-serif">
+    <g transform="translate(64 57)">
+      <rect x="0" y="0" width="42" height="42" rx="13" fill="url(#glow)"/>
+      <path d="M10 12H31V18H16V24H28V30H16V34H10Z" fill="#07152F"/>
+      <text x="58" y="27" fill="#9DDFFF" font-size="13" font-weight="700" letter-spacing="3">THE UNIFIED ENGINEERING WORKSPACE</text>
+      <text x="0" y="106" fill="#FFFFFF" font-size="56" font-weight="800" letter-spacing="-2">UMLForge <tspan fill="#65DDFB">Next</tspan></text>
+      <text x="2" y="145" fill="#B8D4FF" font-size="21" font-weight="500">From model to code. From code back to model.</text>
+      <rect x="0" y="174" width="205" height="35" rx="17.5" fill="#0E2E55" stroke="#3D9CFF" stroke-opacity=".65"/>
+      <circle cx="18" cy="191.5" r="4" fill="#5AF0D1" filter="url(#softGlow)"/>
+      <text x="31" y="196" fill="#DDF7FF" font-size="12" font-weight="700" letter-spacing="1.2">UML  ·  C#  ·  ROSLYN</text>
+      <text x="0" y="251" fill="#91A9D0" font-size="14">One workspace. Safer changes. Less duplicated work.</text>
+    </g>
+    <g transform="translate(710 42)">
+      <rect x="0" y="0" width="420" height="306" rx="18" fill="url(#panel)" stroke="#4E8DDE" stroke-opacity=".55"/>
+      <path d="M0 44H420" stroke="#41638F" stroke-opacity=".5"/>
+      <circle cx="22" cy="22" r="4" fill="#FF6B88"/><circle cx="37" cy="22" r="4" fill="#FFD166"/><circle cx="52" cy="22" r="4" fill="#5AF0D1"/>
+      <text x="75" y="26" fill="#9FBDE8" font-size="11" letter-spacing="1.5">LIVE MODEL ↔ C#</text>
+      <g transform="translate(24 64)">
+        <rect x="0" y="0" width="160" height="70" rx="8" fill="#0D2346" stroke="#55DDF8" stroke-width="1.2"/>
+        <rect x="0" y="0" width="160" height="24" rx="8" fill="#123D69"/>
+        <path d="M0 24H160" stroke="#55DDF8" stroke-opacity=".65"/>
+        <text x="80" y="16" text-anchor="middle" fill="#E8FBFF" font-size="11" font-weight="700">«class» Customer</text>
+        <text x="11" y="42" fill="#95C9FF" font-size="10">+ Id : Guid</text><text x="11" y="57" fill="#95C9FF" font-size="10">+ Save() : Task</text>
+        <path d="M160 35H195" stroke="url(#glow)" stroke-width="2.4" filter="url(#softGlow)"/><path d="M188 29L196 35L188 41" fill="none" stroke="#71E8FF" stroke-width="2"/>
+        <rect x="205" y="0" width="167" height="70" rx="8" fill="#101C3A" stroke="#9B8CFF" stroke-width="1.2"/>
+        <rect x="205" y="0" width="167" height="24" rx="8" fill="#29275C"/><path d="M205 24H372" stroke="#9B8CFF" stroke-opacity=".7"/>
+        <text x="217" y="16" fill="#F0EDFF" font-size="10" font-weight="700">Customer.cs</text>
+        <text x="217" y="42" fill="#B6A9FF" font-size="10">public class Customer</text><text x="217" y="57" fill="#73E8D5" font-size="10">Task SaveAsync()</text>
+      </g>
+      <g transform="translate(24 157)">
+        <rect x="0" y="0" width="372" height="124" rx="9" fill="#071329" stroke="#2E4A76"/>
+        <text x="15" y="22" fill="#72E7D2" font-size="10" font-weight="700" letter-spacing="1.3">SAFE SYNC PREVIEW</text>
+        <circle cx="17" cy="43" r="3" fill="#5AF0D1"/><text x="28" y="47" fill="#C9D9F2" font-size="11">Manual changes preserved</text>
+        <circle cx="17" cy="65" r="3" fill="#FFC857"/><text x="28" y="69" fill="#C9D9F2" font-size="11">Conflicts surfaced before writing</text>
+        <circle cx="17" cy="87" r="3" fill="#9B8CFF"/><text x="28" y="91" fill="#C9D9F2" font-size="11">Backup + history + concurrency guard</text>
+        <path d="M15 105H357" stroke="#28446D"/><text x="15" y="117" fill="#6F8EBB" font-size="9">DESIGN · BUILD · DEBUG · EVOLVE</text>
+      </g>
+    </g>
+  </g>
+</svg>

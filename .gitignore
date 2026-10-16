@@ -1,0 +1,17 @@
+.vs/
+bin/
+obj/
+*.user
+*.suo
+*.csproj.user
+TestResults/
+.artifacts/
+.umlforge/
+*.umlforge-*.tmp
+# Diagnostics locaux
+build-errors.txt
+diagnostic.txt
+# Sauvegardes temporaires
+*.bak
+*.bak2
+*.bak3
